@@ -77,6 +77,18 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
+FRONTEND_URL = os.getenv('FRONTEND_URL')
+if FRONTEND_URL:
+    # Asegurar que no incluya barra diagonal al final
+    clean_frontend_url = FRONTEND_URL.rstrip('/')
+    CORS_ALLOWED_ORIGINS.append(clean_frontend_url)
+
+# AGREGAR ESTO: Obligatorio para evitar el error 403 en solicitudes POST desde Vercel
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://*.railway.app",
+]
 
 # Si el frontend en Vercel está configurado, puedes añadir su dominio por variable de entorno:
 FRONTEND_URL = os.getenv('FRONTEND_URL')
