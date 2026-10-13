@@ -1,0 +1,1 @@
+web: gunicorn maamchan.wsgi --log-file -

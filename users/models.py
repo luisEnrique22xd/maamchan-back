@@ -1,13 +1,10 @@
-# Create your models here.
+# models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
 
 
 class CustomUserManager(BaseUserManager):
-    """
-    Manager personalizado para usar el correo electrónico como identificador único.
-    """
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError(_('El correo electrónico es obligatorio.'))
@@ -38,16 +35,33 @@ class CustomUser(AbstractUser):
         COORDINADORA = 'COORDINADORA', _('Coordinadora de Equipo')
         VENDEDORA = 'VENDEDORA', _('Vendedora / Consultora')
 
+    class Rank(models.TextChoices):
+        BRILLANTE = 'BRILLANTE', _('Brillante')
+        ZAFIRO = 'ZAFIRO', _('Zafiro')
+        ORO = 'ORO', _('Oro')
+        PLATINO = 'PLATINO', _('Platino')
+
     username = None
     email = models.EmailField(_('Correo Electrónico'), unique=True)
     phone = models.CharField(_('Teléfono / WhatsApp'), max_length=20, blank=True, null=True)
 
+    # Datos Personales
     first_name = models.CharField(_('Nombre(s)'), max_length=150)
-    last_name = models.CharField(_('Apellidos'), max_length=150)
+    last_name_paternal = models.CharField(_('Apellido Paterno'), max_length=150, null=True, blank=True)
+    last_name_maternal = models.CharField(_('Apellido Materno'), max_length=150, blank=True, null=True)
 
-    # Estructura Jerárquica y Soporte de Rol Doble
+    # Dirección
+    street = models.CharField(_('Calle y Número'), max_length=255, blank=True, null=True)
+    neighborhood = models.CharField(_('Colonia / Localidad'), max_length=150, blank=True, null=True)
+    municipality = models.CharField(_('Municipio / Alcaldía'), max_length=150, blank=True, null=True)
+    state = models.CharField(_('Estado'), max_length=150, blank=True, null=True)
+
+    # Identificador Nexen
+    nexen_user = models.CharField(_('Usuario Nexen'), max_length=100, unique=True, blank=True, null=True)
+
+    # Jerarquía ha Clasificación
     role_primary = models.CharField(
-        _('Rol Principal'),
+        _('Rol Principal / Nivel'),
         max_length=20,
         choices=Role.choices,
         default=Role.VENDEDORA
@@ -57,16 +71,20 @@ class CustomUser(AbstractUser):
         max_length=20,
         choices=Role.choices,
         blank=True,
-        null=True,
-        help_text=_('Utilizado para vendedoras con rol doble (ej. Coordinadora + Vendedora)')
+        null=True
+    )
+    rank = models.CharField(
+        _('Tipo / Rango'),
+        max_length=20,
+        choices=Rank.choices,
+        default=Rank.BRILLANTE
     )
 
     zone_or_team = models.CharField(
         _('Zona / Equipo'),
         max_length=100,
         blank=True,
-        null=True,
-        help_text=_('Ej. Zona Norte, Equipo Alpha, Centro')
+        null=True
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -75,7 +93,7 @@ class CustomUser(AbstractUser):
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    REQUIRED_FIELDS = ['first_name', 'last_name_paternal']
 
     class Meta:
         verbose_name = _('Usuario')
@@ -87,4 +105,5 @@ class CustomUser(AbstractUser):
 
     @property
     def full_name(self):
-        return f"{self.first_name} {self.last_name}".strip()
+        maternal = f" {self.last_name_maternal}" if self.last_name_maternal else ""
+        return f"{self.first_name} {self.last_name_paternal}{maternal}".strip()

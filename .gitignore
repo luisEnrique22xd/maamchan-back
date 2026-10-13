@@ -1,0 +1,30 @@
+# Entorno Virtual
+env/
+venv/
+ENV/
+.venv/
+
+# Variables de Entorno y Claves (¡CRÍTICO PARA SEGURIDAD!)
+.env
+.env.local
+.env.production
+
+# Base de datos local de pruebas (SQLite)
+*.sqlite3
+*.db
+
+# Cache de Python y compilados
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos estáticos recolectados
+staticfiles/
+
+# Logs y depuración
+*.log
+
+# Configuraciones del editor de código
+.vscode/
+.idea/
+.DS_Store
