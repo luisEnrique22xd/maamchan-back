@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'sales',
+    'rest_framework_simplejwt.token_blacklist', 
 ]
 
 AUTH_USER_MODEL = 'users.CustomUser'
