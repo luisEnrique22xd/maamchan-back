@@ -48,6 +48,7 @@ class SaleSerializer(serializers.ModelSerializer):
     items = SaleItemSerializer(many=True, read_only=True)
     payments = PaymentSerializer(many=True, read_only=True)
     seller_name = serializers.ReadOnlyField(source='seller.full_name')
+    coordinator_name = serializers.SerializerMethodField()
 
     # Campos de entrada solo para escritura al procesar Checkout
     input_items = CreateSaleItemSerializer(many=True, write_only=True)
@@ -56,11 +57,16 @@ class SaleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sale
         fields = [
-            'id', 'seller', 'seller_name', 'customer_name', 'sale_type',
+            'id', 'seller', 'seller_name', 'coordinator_name', 'customer_name', 'sale_type',
             'status', 'total_amount', 'paid_amount', 'balance_due',
             'items', 'payments', 'input_items', 'initial_payment', 'created_at'
         ]
         read_only_fields = ['seller', 'status', 'total_amount', 'paid_amount', 'balance_due', 'created_at']
+
+    def get_coordinator_name(self, obj):
+        if obj.seller and obj.seller.coordinadora:
+            return obj.seller.coordinadora.full_name
+        return "Venta Directa"
 
     def create(self, validated_data):
         input_items = validated_data.pop('input_items')

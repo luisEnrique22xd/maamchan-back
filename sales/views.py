@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from django.db import transaction
+from django.db.models import Q
 
 from .models import Category, Product, Sale, Payment
 from .serializers import CategorySerializer, ProductSerializer, SaleSerializer, PaymentSerializer
@@ -24,7 +25,21 @@ class SaleViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        queryset = Sale.objects.all()
+        user = self.request.user
+
+        # 0. FILTRADO JERÁRQUICO POR RED DE VENTAS
+        if user.is_superuser or user.role_primary == 'DIRECTORA':
+            # La Directora ve absolutamente todas las ventas de la red
+            queryset = Sale.objects.select_related('seller', 'seller__coordinadora').all()
+        elif user.role_primary == 'COORDINADORA':
+            # La Coordinadora ve sus propias ventas + las de sus vendedoras a cargo
+            equipo_ids = user.vendedoras_a_cargo.values_list('id', flat=True)
+            queryset = Sale.objects.filter(
+                Q(seller=user) | Q(seller_id__in=equipo_ids)
+            ).select_related('seller', 'seller__coordinadora')
+        else:
+            # La Vendedora común solo ve sus propias ventas
+            queryset = Sale.objects.filter(seller=user).select_related('seller', 'seller__coordinadora')
 
         # 1. Filtro por estado (PENDIENTE, PAGADO, CANCELADO)
         status_param = self.request.query_params.get('status')
@@ -80,7 +95,6 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
         with transaction.atomic():
             response = super().create(request, *args, **kwargs)
-            # Re-obtener la venta para reflejar los totales actualizados por el método save() del modelo Payment
             sale.refresh_from_db()
 
         return response

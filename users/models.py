@@ -86,6 +86,15 @@ class CustomUser(AbstractUser):
         blank=True,
         null=True
     )
+    # AGREGAR ESTE CAMPO: Relación jerárquica autorreferencial
+    coordinadora = models.ForeignKey(
+        'self',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='vendedoras_a_cargo',
+        verbose_name=_('Coordinadora Asignada')
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
