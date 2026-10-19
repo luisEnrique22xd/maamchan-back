@@ -121,3 +121,47 @@ class Payment(models.Model):
         total_paid = sum(p.amount for p in self.sale.payments.all())
         self.sale.paid_amount = total_paid
         self.sale.update_totals()
+        
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+
+class Category(models.Model):
+    name = models.CharField(_('Nombre de Categoría'), max_length=100)
+    description = models.TextField(_('Descripción'), blank=True, null=True)
+
+    class Meta:
+        verbose_name = _('Categoría')
+        verbose_name_plural = _('Categorías')
+
+    def __str__(self):
+        return self.name
+
+
+class Product(models.Model):
+    code = models.CharField(_('Código / SKU'), max_length=50, unique=True)
+    name = models.CharField(_('Nombre del Producto'), max_length=200)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products', verbose_name=_('Categoría'))
+    
+    # Precios
+    public_price = models.DecimalField(_('Precio Público'), max_digits=10, decimal_places=2)
+    seller_price = models.DecimalField(_('Precio Vendedora'), max_digits=10, decimal_places=2)
+    
+    # Control de Stock
+    stock = models.IntegerField(_('Existencias'), default=0)
+    min_stock = models.IntegerField(_('Stock Mínimo'), default=5)
+    
+    is_active = models.BooleanField(_('Activo'), default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('Producto')
+        verbose_name_plural = _('Productos')
+        ordering = ['name']
+
+    def __str__(self):
+        return f"{self.code} - {self.name}"
+
+    @property
+    def is_low_stock(self):
+        return self.stock <= self.min_stock

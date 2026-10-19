@@ -10,11 +10,18 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    category_name = serializers.ReadOnlyField(source='category.name')
+    ccategory_name = serializers.ReadOnlyField(source='category.name')
+    is_low_stock = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = [
+            'id', 'code', 'name', 'category', 'category_name',
+            'public_price', 'seller_price', 'stock', 'min_stock',
+            'is_low_stock', 'is_active', 'created_at'
+        ]
+    def get_is_low_stock(self, obj):
+        return obj.stock <= obj.min_stock
 
 
 class PaymentSerializer(serializers.ModelSerializer):
