@@ -165,3 +165,4 @@ class Product(models.Model):
     @property
     def is_low_stock(self):
         return self.stock <= self.min_stock
+    
