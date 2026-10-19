@@ -33,9 +33,9 @@ class ActiveCampaignProjectionView(APIView):
 
         for item in team_targets:
             coord = item.coordinator
-            vendedoras_ids = coord.vendedoras_a_cargo.values_list('id', flat=True)
+            # Ajuste de relación según CustomUser: vendedoras_a_cargo
+            vendedoras_ids = coord.vendedoras_a_cargo.values_list('id', flat=True) if hasattr(coord, 'vendedoras_a_cargo') else []
             
-            # Ventas de la coordinadora + su equipo
             coord_sales = sales_in_campaign.filter(
                 Q(seller=coord) | Q(seller_id__in=vendedoras_ids)
             ).aggregate(total=Sum('total_amount'))['total'] or 0

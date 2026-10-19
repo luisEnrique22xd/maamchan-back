@@ -1,4 +1,3 @@
-# Register your models here.
 from django.contrib import admin
 from .models import Category, Product, Sale, SaleItem, Payment
 
@@ -20,9 +19,10 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('sku', 'name', 'category', 'price_retail', 'price_wholesale', 'stock', 'is_active')
+    # Campos adaptados al modelo real: code, public_price y seller_price
+    list_display = ('code', 'name', 'category', 'public_price', 'seller_price', 'stock', 'is_active')
     list_filter = ('category', 'is_active')
-    search_fields = ('sku', 'name')
+    search_fields = ('code', 'name')
 
 
 @admin.register(Sale)
