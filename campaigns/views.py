@@ -1,10 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import permissions
-from django.db.models import Sum, Q, Count
+from rest_framework import permissions, status
+from django.db.models import Sum, Q
 from django.utils import timezone
 
 from .models import Campaign, TargetByTeam, LevelConfig
+from users.models import CustomUser
 from sales.models import Sale
 
 class ActiveCampaignProjectionView(APIView):
@@ -12,15 +13,14 @@ class ActiveCampaignProjectionView(APIView):
 
     def get(self, request):
         today = timezone.now().date()
-        campaign = Campaign.objects.filter(is_active=True, start_date__lte=today, end_date__gte=today).first()
+        campaign = Campaign.objects.filter(is_active=True).order_by('-start_date').first()
 
         if not campaign:
-            return Response({"message": "No hay ninguna campaña activa programada para hoy."}, status=404)
+            return Response({"message": "No hay ninguna campaña activa programada."}, status=404)
 
         sales_in_campaign = Sale.objects.filter(
             created_at__date__gte=campaign.start_date,
-            created_at__date__lte=campaign.end_date,
-            status='PAGADO' # O ventas válidas
+            created_at__date__lte=campaign.end_date
         )
 
         total_real_sales = sales_in_campaign.aggregate(total=Sum('total_amount'))['total'] or 0
@@ -45,16 +45,14 @@ class ActiveCampaignProjectionView(APIView):
 
             team_pct = min(round((coord_sales / item.target_amount) * 100, 1), 100) if item.target_amount > 0 else 0
 
-            # Determinar nivel actual según la tabla de pedidos
+            # Evaluar nivel actual según la tabla de pedidos
             current_level = "Sin Nivel"
-            earnings_order_rate = 0
             est_cash = 0
             est_product = 0
 
             for lvl in levels:
                 if coord_orders >= lvl.required_orders:
                     current_level = lvl.get_name_display()
-                    earnings_order_rate = float(lvl.earnings_per_order)
                     est_cash = float(lvl.cash_bonus)
                     est_product = float(lvl.free_product_bonus)
 
@@ -69,7 +67,6 @@ class ActiveCampaignProjectionView(APIView):
                 "current_level": current_level,
                 "estimated_cash_bonus": est_cash,
                 "estimated_free_product": est_product,
-                "remaining_amount": max(float(item.target_amount) - float(coord_sales), 0)
             })
 
         return Response({
@@ -86,3 +83,34 @@ class ActiveCampaignProjectionView(APIView):
             },
             "teams_progress": teams_progress
         })
+
+    def post(self, request):
+        """Permite crear o configurar una nueva campaña y sus metas por equipo directamente desde la interfaz."""
+        data = request.data
+        
+        # Desactivar otras campañas previas si se marca como activa
+        if data.get('is_active', True):
+            Campaign.objects.filter(is_active=True).update(is_active=False)
+
+        campaign = Campaign.objects.create(
+            name=data.get('name'),
+            code=data.get('code'),
+            start_date=data.get('start_date'),
+            end_date=data.get('end_date'),
+            global_target=data.get('global_target', 0),
+            is_active=True
+        )
+
+        # Crear metas para las coordinadoras enviadas
+        targets = data.get('targets', [])
+        for target_data in targets:
+            coordinator_id = target_data.get('coordinator_id')
+            if coordinator_id:
+                TargetByTeam.objects.create(
+                    campaign=campaign,
+                    coordinator_id=coordinator_id,
+                    target_orders=target_data.get('target_orders', 5),
+                    target_amount=target_data.get('target_amount', 0)
+                )
+
+        return Response({"message": "Campaña y proyecciones guardadas con éxito", "id": campaign.id}, status=status.HTTP_201_CREATED)
