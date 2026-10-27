@@ -4,10 +4,11 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import CustomTokenObtainPairView, LogoutView, UserViewSet
 
 router = DefaultRouter()
-router.register(r'users', UserViewSet, basename='user')
+# Cambiamos 'users' por '' para que cuelgue directamente de /api/users/
+router.register(r'', UserViewSet, basename='user')
 
 urlpatterns = [
-    # Autenticación JWT (ahora quedan limpias bajo /api/auth/...)
+    # Autenticación JWT
     path('auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/logout/', LogoutView.as_view(), name='auth_logout'),
