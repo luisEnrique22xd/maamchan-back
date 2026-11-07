@@ -10,6 +10,8 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
+import os
+from supabase import create_client
 
 from .models import CustomUser
 from .serializers import CustomUserSerializer, CustomTokenObtainPairSerializer
@@ -58,27 +60,16 @@ class LogoutView(APIView):
         except Exception as e:
             return Response({"error": "Token inválido o expirado."}, status=status.HTTP_400_BAD_REQUEST)
         
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, permissions
-from supabase import create_client
-import os
-
-
-SUPABASE_URL = os.environ.get('SUPABASE_URL')
-SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-import os
-from supabase import create_client
 
 SUPABASE_URL = os.environ.get('SUPABASE_URL')
 SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
 
-# Validación para evitar que falle si una variable llega vacía
 if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("Faltan las credenciales de Supabase en las variables de entorno.")
+    raise ValueError("Faltan las credenciales de SupABASE en las variables de entorno de Railway.")
 
+# Instancia oficial y limpia
 supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 
 class DocumentUploadView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -94,21 +85,16 @@ class DocumentUploadView(APIView):
         file_path = f"vendedoras/user_{pk}/{doc_type}_{file_obj.name}"
 
         try:
-            # Subir a Supabase Storage (Bucket: expedientes-privados)
-            supabase.storage.from_("expedientes-privados").upload(
+            # Usamos supabase_client (la instancia validada)
+            supabase_client.storage.from_("expedientes-privados").upload(
                 path=file_path,
                 file=file_obj.read(),
                 file_options={"content-type": file_obj.content_type}
             )
 
-            # Obtener URL firmada temporal para visualizarlo de forma segura
-            signed_url_res = supabase.storage.from_("expedientes-privados").create_signed_url(file_path, 3600)
+            # Obtener URL firmada temporal para visualizarlo de forma segura (válida por 1 hora)
+            signed_url_res = supabase_client.storage.from_("expedientes-privados").create_signed_url(file_path, 3600)
             file_url = signed_url_res.get('signedUrl')
-
-            # Opcional: Actualizar el modelo del usuario en tu base de datos PostgreSQL
-            # user = User.objects.get(pk=pk)
-            # if doc_type == 'ine': user.ine_document_url = file_url
-            # user.save()
 
             return Response({"message": "Subido con éxito", "url": file_url}, status=200)
 
