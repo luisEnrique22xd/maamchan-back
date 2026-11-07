@@ -71,8 +71,12 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
+from rest_framework.parsers import MultiPartParser, FormParser
+
 class DocumentUploadView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    # ¡Esta línea es la clave para que Django acepte archivos y FormData!
+    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, pk):
         file_obj = request.FILES.get('file')
@@ -81,18 +85,15 @@ class DocumentUploadView(APIView):
         if not file_obj or not doc_type:
             return Response({"error": "Faltan datos o archivo"}, status=400)
 
-        # Ruta limpia en el bucket privado
         file_path = f"vendedoras/user_{pk}/{doc_type}_{file_obj.name}"
 
         try:
-            # Usamos supabase_client (la instancia validada)
             supabase_client.storage.from_("expedientes-privados").upload(
                 path=file_path,
                 file=file_obj.read(),
                 file_options={"content-type": file_obj.content_type}
             )
 
-            # Obtener URL firmada temporal para visualizarlo de forma segura (válida por 1 hora)
             signed_url_res = supabase_client.storage.from_("expedientes-privados").create_signed_url(file_path, 3600)
             file_url = signed_url_res.get('signedUrl')
 

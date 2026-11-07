@@ -8,11 +8,12 @@ router = DefaultRouter()
 router.register(r'users', UserViewSet, basename='user')
 
 urlpatterns = [
+    path('', include(router.urls)),
     # Autenticación JWT
     path('auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/logout/', LogoutView.as_view(), name='auth_logout'),
     path('users/<int:pk>/upload-document/', DocumentUploadView.as_view()),
     # Endpoints del Router
-    path('', include(router.urls)),
+   
 ]
