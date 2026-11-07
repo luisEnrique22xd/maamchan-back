@@ -64,9 +64,21 @@ from rest_framework import status, permissions
 from supabase import create_client
 import os
 
+
 SUPABASE_URL = os.environ.get('SUPABASE_URL')
 SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+import os
+from supabase import create_client
+
+SUPABASE_URL = os.environ.get('SUPABASE_URL')
+SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
+
+# Validación para evitar que falle si una variable llega vacía
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise ValueError("Faltan las credenciales de Supabase en las variables de entorno.")
+
+supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 class DocumentUploadView(APIView):
     permission_classes = [permissions.IsAuthenticated]
