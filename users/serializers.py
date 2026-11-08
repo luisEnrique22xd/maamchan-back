@@ -14,7 +14,9 @@ class CustomUserSerializer(serializers.ModelSerializer):
             'id', 'email', 'password', 'first_name', 'last_name_paternal', 'last_name_maternal', 
             'full_name', 'phone', 'street', 'neighborhood', 'municipality', 'state',
             'nexen_user', 'role_primary', 'role_secondary', 'rank', 'zone_or_team',
-            'is_active', 'created_at'
+            'is_active', 'created_at', 'ine_document_url',
+            'proof_of_address_url',
+            'expediente_status',
         ]
         read_only_fields = ['id', 'created_at']
 
