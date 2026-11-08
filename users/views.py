@@ -96,6 +96,19 @@ class DocumentUploadView(APIView):
 
             signed_url_res = supabase_client.storage.from_("expedientes-privados").create_signed_url(file_path, 3600)
             file_url = signed_url_res.get('signedUrl')
+            
+            # --- ¡IMPORTANTE! Guardar la URL en la base de datos del usuario ---
+            user = CustomUser.objects.get(pk=pk)
+            if doc_type == 'ine':
+                user.ine_document_url = file_url
+            elif doc_type == 'address':
+                user.proof_of_address_url = file_url
+            
+            # Opcional: Si los dos documentos ya están listos, marcar expediente como completo
+            if user.ine_document_url and user.proof_of_address_url:
+                user.expediente_status = 'COMPLETO'
+            
+            user.save()
 
             return Response({"message": "Subido con éxito", "url": file_url}, status=200)
 
