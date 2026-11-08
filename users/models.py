@@ -58,6 +58,9 @@ class CustomUser(AbstractUser):
 
     # Identificador Nexen
     nexen_user = models.CharField(_('Usuario Nexen'), max_length=100, unique=True, blank=True, null=True)
+    ine_document_url = models.URLField(max_length=500, blank=True, null=True)
+    proof_of_address_url = models.URLField(max_length=500, blank=True, null=True)
+    expediente_status = models.CharField(max_length=20, default='PENDIENTE', blank=True, null=True)
 
     # Jerarquía ha Clasificación
     role_primary = models.CharField(
