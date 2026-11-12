@@ -13,10 +13,24 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.filter(is_active=True)
+# class ProductViewSet(viewsets.ModelViewSet):
+#     queryset = Product.objects.filter(is_active=True)
+#     serializer_class = ProductSerializer
+#     permission_classes = [permissions.IsAuthenticated]
+# class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        inventory_type = self.request.query_params.get('inventory_type')
+
+        # Si el frontend envía ?inventory_type=CEDIS o INTERNO, filtramos aquí
+        if inventory_type:
+            queryset = queryset.filter(inventory_type=inventory_type)
+
+        return queryset
 
 
 class SaleViewSet(viewsets.ModelViewSet):

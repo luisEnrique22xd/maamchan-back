@@ -16,6 +16,10 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+    INVENTORY_TYPES = [
+        ('INTERNO', 'Inventario Interno'),
+        ('CEDIS', 'Centro de Distribución'),
+    ]
     code = models.CharField(_('Código / SKU'), max_length=50, unique=True)
     name = models.CharField(_('Nombre del Producto'), max_length=200)
     category = models.ForeignKey(
@@ -39,6 +43,11 @@ class Product(models.Model):
     is_active = models.BooleanField(_('Activo'), default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    inventory_type = models.CharField(
+        max_length=20, 
+        choices=INVENTORY_TYPES, 
+        default='INTERNO'
+    )
 
     class Meta:
         verbose_name = _('Producto')

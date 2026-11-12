@@ -18,7 +18,7 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'code', 'name', 'category', 'category_name',
             'public_price', 'seller_price', 'stock', 'min_stock',
-            'is_low_stock', 'is_active', 'created_at'
+            'is_low_stock', 'is_active', 'created_at', 'inventory_type'
         ]
     def get_is_low_stock(self, obj):
         return obj.stock <= obj.min_stock
