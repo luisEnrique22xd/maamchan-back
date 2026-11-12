@@ -13,11 +13,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
 
-# class ProductViewSet(viewsets.ModelViewSet):
-#     queryset = Product.objects.filter(is_active=True)
-#     serializer_class = ProductSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-# class ProductViewSet(viewsets.ModelViewSet):
+class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -31,7 +27,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(inventory_type=inventory_type)
 
         return queryset
-
 
 class SaleViewSet(viewsets.ModelViewSet):
     queryset = Sale.objects.all()
@@ -154,9 +149,9 @@ class DashboardSummaryView(APIView):
             count=Count('id')
         )
 
-        # 3. Expedientes por Validar (Usuarios con estado pendiente, o ajusta según tu modelo de Expedientes)
+        # 3. Expedientes por Validar
         pending_expedientes = CustomUser.objects.filter(
-            is_active=False # O un campo estado='PENDIENTE' si lo manejas en expediente
+            is_active=False 
         ).count()
 
         # 4. Vendedoras Activas

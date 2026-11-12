@@ -48,7 +48,7 @@ class Product(models.Model):
         choices=INVENTORY_TYPES, 
         default='INTERNO'
     )
-
+    
     class Meta:
         verbose_name = _('Producto')
         verbose_name_plural = _('Productos')
