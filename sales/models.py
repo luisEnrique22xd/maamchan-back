@@ -20,7 +20,8 @@ class Product(models.Model):
         ('INTERNO', 'Inventario Interno'),
         ('CEDIS', 'Centro de Distribución'),
     ]
-    code = models.CharField(_('Código / SKU'), max_length=50, unique=True)
+    # 1. Quitamos unique=True de aquí para permitir duplicar el código en almacenes distintos
+    code = models.CharField(_('Código / SKU'), max_length=50)
     name = models.CharField(_('Nombre del Producto'), max_length=200)
     category = models.ForeignKey(
         Category, 
