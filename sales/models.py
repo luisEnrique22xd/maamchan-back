@@ -68,6 +68,7 @@ class Sale(models.Model):
         CONTADO = 'CONTADO', _('Contado')
         CREDITO = 'CREDITO', _('Crédito')
         ANTICIPO = 'ANTICIPO', _('Anticipo / Apartado')
+        CAMBIO = 'CAMBIO', _('Cambio de Mercancía')
 
     class Status(models.TextChoices):
         PENDIENTE = 'PENDIENTE', _('Pendiente de Pago')
