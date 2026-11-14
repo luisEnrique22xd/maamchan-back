@@ -41,7 +41,7 @@ class SaleItemSerializer(serializers.ModelSerializer):
 
 class CreateSaleItemSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
-    quantity = serializers.IntegerField(min_value=1)
+    quantity = serializers.IntegerField()
     unit_price = serializers.DecimalField(max_digits=10, decimal_places=2)
 
 
