@@ -21,8 +21,7 @@ class ActiveCampaignProjectionView(APIView):
             start_date = campaign.start_date or today
             end_date = campaign.end_date or today
             total_days = max(1, (end_date - start_date).days + 1)
-            current_day = max(1, min((today - start_date).days + 1, total_days))
-
+            current_day = max(1, min((today - start_date).days, total_days))
             sales_in_campaign = Sale.objects.filter(
                 created_at__date__gte=start_date,
                 created_at__date__lte=end_date
