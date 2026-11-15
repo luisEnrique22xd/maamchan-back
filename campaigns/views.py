@@ -96,7 +96,7 @@ class ActiveCampaignProjectionView(APIView):
                 "teams_progress": teams_progress
             })
         except Exception as e:
-            # ESTO IMPRIMIRÁ EL ERROR COMPLETO EN LOS LOGS DE RAILWAY
+            # ESTO DEVOLVERÁ EL ERROR EXACTO EN LA CONSOLA DEL NAVEGADOR
             error_trace = traceback.format_exc()
             print("--- ERROR 500 DETALLADO ---")
             print(error_trace)
