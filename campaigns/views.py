@@ -18,6 +18,13 @@ class ActiveCampaignProjectionView(APIView):
         if not campaign:
             return Response({"message": "No hay ninguna campaña activa programada."}, status=404)
 
+        # --- CÁLCULO AUTOMÁTICO DE DÍAS ---
+        total_days = (campaign.end_date - campaign.start_date).days + 1
+        current_day = (today - campaign.start_date).days + 1
+        # Nos aseguramos de acotar current_day entre 1 y el total de días de la campaña
+        current_day = max(1, min(current_day, total_days))
+        # ----------------------------------
+
         sales_in_campaign = Sale.objects.filter(
             created_at__date__gte=campaign.start_date,
             created_at__date__lte=campaign.end_date
@@ -80,6 +87,14 @@ class ActiveCampaignProjectionView(APIView):
                 "total_real_sales": float(total_real_sales),
                 "total_real_orders": total_real_orders,
                 "progress_percentage": progress_percentage,
+                # Nuevos campos calculados para que el frontend pinte los bloques exactos:
+                "current_day": current_day,
+                "total_days": total_days,
+                "goal_orders": 30, # Puedes cambiarlo o enlazarlo a tu meta real de pedidos
+                "current_orders": total_real_orders,
+                "new_clients_pct": 50,  # Opcional: puedes dejarlos o calcularlos si tienes la métrica
+                "reactivations_pct": 30,
+                "resort_pct": 20
             },
             "teams_progress": teams_progress
         })
