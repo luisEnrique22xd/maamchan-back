@@ -1,9 +1,9 @@
+import traceback
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
 from django.db.models import Sum, Q
 from django.utils import timezone
-
 from .models import Campaign, TargetByTeam, LevelConfig
 from sales.models import Sale
 
@@ -18,7 +18,6 @@ class ActiveCampaignProjectionView(APIView):
             if not campaign:
                 return Response({"message": "No hay ninguna campaña activa programada."}, status=404)
 
-            # Cálculo exacto de los días para la interfaz de Next.js
             start_date = campaign.start_date or today
             end_date = campaign.end_date or today
             total_days = max(1, (end_date - start_date).days + 1)
@@ -97,32 +96,8 @@ class ActiveCampaignProjectionView(APIView):
                 "teams_progress": teams_progress
             })
         except Exception as e:
-            print(f"Error interno en ActiveCampaignProjectionView: {str(e)}")
-            return Response({"error": str(e)}, status=500)
-
-    def post(self, request):
-        data = request.data
-        if data.get('is_active', True):
-            Campaign.objects.filter(is_active=True).update(is_active=False)
-
-        campaign = Campaign.objects.create(
-            name=data.get('name'),
-            code=data.get('code'),
-            start_date=data.get('start_date'),
-            end_date=data.get('end_date'),
-            global_target=data.get('global_target', 0),
-            is_active=True
-        )
-
-        targets = data.get('targets', [])
-        for target_data in targets:
-            coordinator_id = target_data.get('coordinator_id')
-            if coordinator_id:
-                TargetByTeam.objects.create(
-                    campaign=campaign,
-                    coordinator_id=coordinator_id,
-                    target_orders=target_data.get('target_orders', 5),
-                    target_amount=target_data.get('target_amount', 0)
-                )
-
-        return Response({"message": "Campaña y proyecciones guardadas con éxito", "id": campaign.id}, status=status.HTTP_201_CREATED)
+            # ESTO IMPRIMIRÁ EL ERROR COMPLETO EN LOS LOGS DE RAILWAY
+            error_trace = traceback.format_exc()
+            print("--- ERROR 500 DETALLADO ---")
+            print(error_trace)
+            return Response({"error": str(e), "trace": error_trace}, status=500)
