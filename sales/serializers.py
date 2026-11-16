@@ -124,7 +124,7 @@ class SaleSerializer(serializers.ModelSerializer):
 
             # 4. Actualizar saldo y estado
             sale.balance_due = sale.total_amount - sale.paid_amount
-            if sale.balance_due <= 0 and sale.total_amount > 0:
+            if sale.balance_due <= 0 and (sale.total_amount > 0 or sale.sale_type == Sale.SaleType.CAMBIO):
                 sale.status = Sale.Status.PAGADO
             else:
                 sale.status = Sale.Status.PENDIENTE
