@@ -1,6 +1,7 @@
 from django.db import transaction
 from rest_framework import serializers
 from .models import Category, Product, Sale, SaleItem, Payment
+from decimal import Decimal
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -82,7 +83,7 @@ class SaleSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             # 1. Crear la venta
             sale = Sale.objects.create(**validated_data)
-            total_sale = 0
+            total_sale = Decimal('0.00')
 
             # 2. Procesar cada producto y descontar inventario
             for item_data in input_items:
@@ -94,7 +95,7 @@ class SaleSerializer(serializers.ModelSerializer):
                 if product.stock < item_data['quantity']:
                     raise serializers.ValidationError(f"Stock insuficiente para '{product.name}'. Disponible: {product.stock}")
 
-                # Descontar stock
+                # Descontar (o devolver si es negativo) stock
                 product.stock -= item_data['quantity']
                 product.save()
 
@@ -110,6 +111,7 @@ class SaleSerializer(serializers.ModelSerializer):
                 total_sale += subtotal
 
             sale.total_amount = total_sale
+            sale.paid_amount = Decimal('0.00')  # <--- Evita que quede como float
 
             # 3. Registrar el pago inicial si se incluyó
             if initial_payment and initial_payment.get('amount', 0) > 0:
