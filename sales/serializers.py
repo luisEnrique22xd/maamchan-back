@@ -43,11 +43,11 @@ class SaleItemSerializer(serializers.ModelSerializer):
 class CreateSaleItemSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
     quantity = serializers.IntegerField()
-    unit_price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    unit_price = serializers.DecimalField(max_digits=12, decimal_places=2)
 
 
 class CreatePaymentSerializer(serializers.Serializer):
-    amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
     payment_method = serializers.ChoiceField(choices=Payment.PaymentMethod.choices, default=Payment.PaymentMethod.EFECTIVO)
     reference = serializers.CharField(required=False, allow_blank=True)
 
